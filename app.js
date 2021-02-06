@@ -1,76 +1,80 @@
-const express = require ('express');
+const express = require("express");
 const app = express();
-const port = 9191;
-//const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const { google } = require('googleapis');
-const cors = require('cors');
-const urlParse = require('url-parse');
-const queryParse = require('query-string');
-//const axios = require('axios');
-require ('dotenv/config');
+const request = require("request");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const mongo = require("mongodb");
+const mongoClient = require("mongodb").MongoClient;
+const configuration = require("./config.json");
 
-
-//600743198704-il0aik24cpm78a28glu8c3n8r48f6g3f.apps.googleusercontent.com
-//jy1EiQpJg5e0K5G6dYifdcte
-
+const port = configuration.port;
+const dbConnection = configuration.databaseConnectionUrl;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get("/getURLSearch", (req, res) => {
-    const oauth2Client = new google.auth.OAuth2(
-        //Client ID
-        "600743198704-il0aik24cpm78a28glu8c3n8r48f6g3f.apps.googleusercontent.com",
-        //Client Secret
-        "jy1EiQpJg5e0K5G6dYifdcte",
-        //link to redirect to
-        "http://localhost:9191/search"
-    );
-        const scopes = ["https://www.googleapis.com/customsearch/v1/siterestrict?"];
+//To create db collectin call it just at first time 
+//createCollection();
 
-        const url = oauth2Client.generateAuthUrl({
-            access_type: "Offline",
-            scope: scopes,
-            state: JSON.stringify({
-                callbackUrl: req.body.callbackUrl,
-                userID: req.body.userID
-            })
-        });
-console.log(this);
- /*      request(url, (err, response, body) => {
-            console.log("Error:", err);
-            console.log("statusCode: ", response && response.statusCode);
-            res.send({ url });
-        });
-*/
+app.get("/search", (req, res) => {
+  
+  let query = req.query.q;
+
+  if (!query) {
+    res.send(
+      "please send valid parameters like 'http://localhost:9191/search?q=Your_Search_String'"
+    );
+    return;
+  }
+  const searchUrl = configuration.googleApiUrl
+    .replace("{{apiKey}}", configuration.googleApiKey)
+    .replace("{{query}}", query);
+
+  request(searchUrl, (error, response, body) => {
+    console.log("statusCode: ", response && response.statusCode);
+    if (error) {
+      console.log(error);
+    } else {
+      let result = JSON.parse(body).items;
+      if (result && result.length) {
+        addSearchResultToDb(query,result);
+        res.send({ result });
+      } else res.send("no data found :P");
+    }
+  });
 });
 
+app.listen(port, () =>
+  console.log(`GOOGLE SEARCH IS LISTENING ON PORT ${port}`)
+);
+
+function addSearchResultToDb(searchKey, result) {
+  let insertedObj = { searchKey: searchKey, result: result };
+  insertRow(insertedObj);
+}
+
+function createCollection() {
+  mongoClient.connect(dbConnection, function (err, db) {
+    if (err) throw err;
+    var dbo = db.db(configuration.databaseName);
+    dbo.createCollection(configuration.collectionName, function (err, res) {
+      if (err) throw err;
+      console.log("Collection created!");
+      db.close();
+    });
+  });
+}
 
 
-
-//Import Routes
-
-//const searchResultRoute = require('./routes/searchResult');
-//const { json } = require('body-parser');
-//const { request } = require('express');
-
-//app.use('/routes/searchResult', searchResultRoute);
-
-
-//Routes
-
-
-//app.get('/searchResult', (req, res) => {
-//    res.send('Here we go!');
-//});
-
-
-//Connect to the DB
-
-//mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true });
-
-//Listening to the server
-
-app.listen(port, () => console.log(`GOOGLE SEARCH IS LISTENING ON PORT ${port}`));
+function insertRow(obj) {
+  mongoClient.connect(dbConnection, function (err, db) {
+    if (err) throw err;
+    let dbo = db.db(configuration.databaseName);
+    dbo.collection(configuration.collectionName).insertOne(obj, function (err, res) {
+      if (err) throw err;
+      console.log("1 document inserted");
+      db.close();
+    });
+  });
+}

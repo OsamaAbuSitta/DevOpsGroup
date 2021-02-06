@@ -1,0 +1,8 @@
+{
+    "port": 9191,
+    "googleApiKey": "AIzaSyDacwtImgE0JayvGtoJIFFeJBHorlNHN_Q",
+    "googleApiUrl": "https://www.googleapis.com/customsearch/v1?key={{apiKey}}&cx=017576662512468239146:omuauf_lfve&q={{query}}",
+    "databaseConnectionUrl":"mongodb+srv://dbClient:e7ZIXXTAQvSLg5tg@cluster0.g6wtw.mongodb.net/dbClient?retryWrites=true&w=majority",
+    "databaseName":"Cluster0",
+    "collectionName": "search-result"
+}
