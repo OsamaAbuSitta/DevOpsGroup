@@ -5,10 +5,10 @@ Task: Week 4 - Group Task.
 ---------------------------------------------------
 Group Members:
 
-# 1.HID:  H00373352 , Name: Osama Abu Sitta
-# 2.HID:  H00342900 , Name: Basheer Abu Sneineh
-# 3.HID:  H00316638 , Name: Shamsa Ibrahim
-# 4.HID:  H00361739 , Name: Rashid Hattab 
+- HID:  H00373352 , Name: Osama Abu Sitta
+- HID:  H00342900 , Name: Basheer Abu Sneineh
+- HID:  H00316638 , Name: Shamsa Ibrahim
+- HID:  H00361739 , Name: Rashid Hattab 
 
 ----------------------------------------------------
 Description:
