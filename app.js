@@ -45,6 +45,13 @@ app.get("/search", (req, res) => {
   });
 });
 
+
+app.get("/searchLog", (req, res) => {
+  let searchKey = req.query.q; 
+  getSearchLog(searchKey,res);
+});
+
+
 app.listen(port, () =>
   console.log(`GOOGLE SEARCH IS LISTENING ON PORT ${port}`)
 );
@@ -76,5 +83,25 @@ function insertRow(obj) {
       console.log("1 document inserted");
       db.close();
     });
+  });
+}
+
+
+function getSearchLog(searchKey,res) {
+
+  mongoClient.connect(dbConnection, function (err, db) {
+    if (err) throw err;
+    let dbo = db.db(configuration.databaseName);
+    var query = {};
+    if(searchKey){
+      query = {searchKey:searchKey};
+    }  
+    dbo.collection(configuration.collectionName).find(query).toArray(function(err, result) {
+      if (err) throw err;
+      console.log(result);
+      db.close();
+      res.send({ result });
+    }); 
+
   });
 }
