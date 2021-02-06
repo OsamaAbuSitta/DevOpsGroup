@@ -39,7 +39,8 @@ app.get("/search", (req, res) => {
       let result = JSON.parse(body).items;
       if (result && result.length) {
         addSearchResultToDb(query,result);
-        res.send({ result });
+          let formattedResult = formatResult(result);
+        res.send(formattedResult);
       } else res.send("no data found :P");
     }
   });
@@ -85,8 +86,6 @@ function insertRow(obj) {
     });
   });
 }
-
-
 function getSearchLog(searchKey,res) {
 
   mongoClient.connect(dbConnection, function (err, db) {
@@ -104,4 +103,18 @@ function getSearchLog(searchKey,res) {
     }); 
 
   });
+}
+
+
+function formatResult(result){
+let strResult = "";
+
+
+for(let item of result ){
+strResult +="<li>"+ item.htmlSnippet  +"</li>"
+
+}
+
+return "<html><head><title>DevOps</title></head><body> <p> Result :</p> <ul> "+ strResult+"</ul></body></html>";
+
 }
